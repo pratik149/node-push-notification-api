@@ -6,7 +6,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 
 // Import API Routes
-const notificationRoutes = require('./routes/web/index');
+const notificationRoutes = require('./routes/api/notifications');
 
 // Create an instance of express app
 const app = express()
