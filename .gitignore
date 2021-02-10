@@ -3,3 +3,4 @@
 .env.backup
 npm-debug.log
 yarn-error.log
+service-account-key.json
