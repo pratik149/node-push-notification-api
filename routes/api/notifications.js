@@ -54,8 +54,7 @@ router.get('/send-to-all', function(req, res, next) {
 				await NotificationDetail.insertMany(docsToInsertInBulk)
 					.then(() => { 
 						console.log("Data inserted") // Success 
-					})
-					err.catch((err) => { 
+					}).catch((err) => { 
 						console.log(err) // Failure 
 					});
 			})
