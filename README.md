@@ -1,4 +1,4 @@
-## Node.js server to send push notification to Android and iOS devices using Firebase Cloud Messaging
+## Node.js server to send push notification to Android and iOS devices using Firebase Cloud Messaging and store response in MongoDB
 
 ![screenshot](https://github.com/pratik149/node-push-notification-api/blob/main/docs/images/1.png)
 
