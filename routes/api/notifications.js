@@ -1,8 +1,10 @@
 // Imports
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const admin = require("firebase-admin");
 const serviceAccount = require("../../service-account-key.json");
+const NotificationDetail =  require('../../models/notification-detail')
+const _ = require('lodash')
 
 // Initialize Firebase Admin
 admin.initializeApp({
@@ -17,7 +19,10 @@ admin.initializeApp({
 router.get('/send-to-all', function(req, res, next) {
 	// Create a list containing up to 500 registration tokens.
 	// These registration tokens come from the client FCM SDKs.
-	const registrationTokens = ['cu-lltG7QbmJ9BSypDaK-G:APA91bHEEQDcdtW4hqaTOyo2IRhIygS4sZUvehjWCONykvgrlLRVa3C56eUFj6haFCxtVLFXJHAoYEzR1X7cwCnGiG5WFrLqM86W966taED8bDKWRQgPIP_Xgh2Se3HlLstomSXHhioZ']
+	const registrationTokens = [
+		'cu-lltG7QbmJ9BSypDaK-G:APA91bHEEQDcdtAoYEzR1X7cwCnGiG5WFrLqM86W966taED8bDKWRQgPIP3C56eUFj6haFCxtVLFXJHAoYEzR1X7cwCnGiG5WFrLqM86W966taED8bDKWRQgPIP_Xgh2SasamSXHhioZ',
+		'cu-lltG7QbmJ9BSypDaK-G:APA91bHEEQDcdtW4hqaTOyo2IRhIygS4sZUvehjWCONykvgrlLRVa3C56eUFj6haFCxtVLFXJHAoYEzR1X7cwCnGiG5WFrLqM86W966taED8bDKWRQgPIP_Xgh2Se3HlLstomSXHhioZ'
+	]
 
 	const message = {
 		notification: {
@@ -32,19 +37,28 @@ router.get('/send-to-all', function(req, res, next) {
 	// registration tokens.
 	admin.messaging().sendMulticast(message)
 		.then((response) => {
-			// The response is a BatchResponse whose responses list
-			// corresponds to the order of the input tokens.
-			console.log(response.successCount + ' messages were sent successfully');
-			console.log('response object: ', response);
-			if (response.failureCount > 0) {
-				const failedTokens = [];
-				response.responses.forEach((resp, idx) => {
-				if (!resp.success) {
-					failedTokens.push(registrationTokens[idx]);
-				}
-				});
-				console.log('List of tokens that caused failures: ' + failedTokens);
-			}
+			// Making chunks of responses
+			const chunkSize = 100;
+			const chunkedReponses = _.chunk(response.responses, chunkSize);
+
+			// Storing the responses in chunks
+			chunkedReponses.forEach(async (chunk) => {
+				// Preparing the docs to insert
+				const docsToInsertInBulk = chunk.map((resp, idx) => ({
+					userId: registrationTokens[idx],
+					status: resp.success,
+					reason: resp.success ? undefined : resp.error.message,
+					messageId: resp.success ? resp.messageId : undefined
+				}))
+				// Insert the prepared chunk of docs in bulk
+				await NotificationDetail.insertMany(docsToInsertInBulk)
+					.then(() => { 
+						console.log("Data inserted") // Success 
+					})
+					err.catch((err) => { 
+						console.log(err) // Failure 
+					});
+			})
 			res.status('200').send(response)
 		})
 		.catch((error) => {
