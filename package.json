@@ -16,6 +16,7 @@
 	"dependencies": {
 		"express": "^4.17.1",
 		"firebase-admin": "^9.4.2",
+		"lodash": "^4.17.20",
 		"mongoose": "^5.11.15"
 	}
 }
